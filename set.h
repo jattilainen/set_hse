@@ -6,7 +6,7 @@ template<class ValueType>
 class Set{
     struct Node{
         ValueType key;
-        int height;
+        size_t height;
         Node* left;
         Node* right;
         Node* anc;
@@ -21,10 +21,7 @@ class Set{
         return v ? v->height : 0;
     }
     int balance(Node* v) {
-        if (height(v) > 50) {
-            exit(0);
-        }
-        return height(v->right) - height(v->left);
+        return (int)height(v->right) - (int)height(v->left);
     }
     void update(Node* v) {
         v->height = max(height(v->left), height(v->right)) + 1;
@@ -98,20 +95,20 @@ class Set{
         }
         return fix(v);
     }
-    Node* getmin(Node* v) const {
+    Node* get_min(Node* v) const {
         if (v == 0) {
             return 0;
         }
         if (v->left) {
-            return(getmin(v->left));
+            return(get_min(v->left));
         }
         return v;
     }
-    Node* removemin(Node* v) {
+    Node* remove_min(Node* v) {
         if (v->left == 0) {
             return v->right;
         }
-        v->left = removemin(v->left);
+        v->left = remove_min(v->left);
         return fix(v);
     }
     Node* back_erase(Node* v, ValueType k) {
@@ -129,15 +126,15 @@ class Set{
             if (r == 0) {
                 return l;
             }
-            Node* mn = getmin(r);
-            mn->right = removemin(r);
+            Node* mn = get_min(r);
+            mn->right = remove_min(r);
             mn->left = l;
             return fix(mn);
         }
         return fix(v);
     }
     Node* root;
-    size_t sz;
+    size_t treeSize;
     void del(Node* v) {
         if (v == 0) {
             return;
@@ -154,7 +151,7 @@ class Set{
             return 0;
         }
         if (!(v->key < elem->key) && !(elem->key < v->key)) {
-            return getmin(v->right);
+            return get_min(v->right);
         } else if (!(v->key < elem->key)) {
             Node* ansleft = back_upper(v->left, elem);
             if (ansleft == 0) {
@@ -174,7 +171,7 @@ class Set{
             return 0;
         }
         if (!(v->key < elem->key) && !(elem->key < v->key)) {
-            return getmax(v->left);
+            return get_max(v->left);
         } else if (v->key < elem->key) {
             Node* ansright = back_lower(v->right, elem);
             if (ansright == 0) {
@@ -186,12 +183,12 @@ class Set{
             return back_lower(v->left, elem);
         }
     }
-    Node* getmax(Node* v) const {
+    Node* get_max(Node* v) const {
         if (v == nullptr) {
             return nullptr;
         }
         if (v->right != nullptr) {
-            return getmax(v->right);
+            return get_max(v->right);
         }
         return v;
     }
@@ -221,7 +218,7 @@ public:
         }
         iterator& operator--() {
             if (isend) {
-                elem = set->getmax(set->root);
+                elem = set->get_max(set->root);
                 isend = false;
             } else {
                 elem = set->back_lower(set->root, elem);
@@ -264,12 +261,12 @@ public:
     };
     Set() {
         root = nullptr;
-        sz = 0;
+        treeSize = 0;
     }
     template <typename InputIterator>
     Set(InputIterator begin, InputIterator end) {
         root = nullptr;
-        sz = 0;
+        treeSize = 0;
         while(begin != end) {
             insert(*begin);
             begin++;
@@ -277,13 +274,13 @@ public:
     }
     Set(const initializer_list<ValueType> &list) {
         root = nullptr;
-        sz = 0;
+        treeSize = 0;
         for (auto elem: list) {
             insert(elem);
         }
     }
     Set(const Set & other) {
-        sz = 0;
+        treeSize = 0;
         root = nullptr;
         for (auto elem : other) {
             insert(elem);
@@ -301,7 +298,7 @@ public:
         if (b.root == root) {
             return *this;
         }
-        sz = 0;
+        treeSize = 0;
         del(root);
         root = nullptr;
         dfs_insert(b.root);
@@ -338,27 +335,27 @@ public:
     }
     void insert(ValueType k) {
         if (!in(root, k)) {
-            sz++;
+            treeSize++;
             root = back_insert(root, k);
         }
     }
     void erase(ValueType k) {
         if (in(root, k)) {
-            sz--;
+            treeSize--;
             root = back_erase(root, k);
         }
     }
     size_t size() const {
-        return sz;
+        return treeSize;
     }
     bool empty() const {
-        return sz == 0;
+        return treeSize == 0;
     }
     iterator begin() const {
-        if (sz == 0) {
+        if (treeSize == 0) {
             return iterator(this, nullptr, true);
         } else {
-            return iterator(this, getmin(root), false);
+            return iterator(this, get_min(root), false);
         }
     }
     iterator end() const {
@@ -375,7 +372,7 @@ public:
         return ans.second;
     }
     ~Set() {
-        sz = 0;
+        treeSize = 0;
         del(root);
     }
 };
